@@ -37,6 +37,11 @@
             {{ `${utils.etherUtils.formatUnits(gasPrice, "gwei")} gwei` }}
           </div>
         </el-form-item>
+        <el-form-item label="total Amount :">
+          <div>
+            {{ state.home.gasPriceList.length }}
+          </div>
+        </el-form-item>
       </el-form>
       <el-divider />
       <el-table :data="tableDataList" stripe style="width: 100%">

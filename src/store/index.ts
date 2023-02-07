@@ -4,7 +4,7 @@ import { BigNumber, utils, log } from "../const";
 import { toRaw } from "vue";
 import { ElMessage, ElNotification } from "element-plus";
 
-export interface Storage {}
+export interface Storage { }
 
 export interface Home {
   userAddress: string;
@@ -77,22 +77,36 @@ const actions: ActionTree<State, State> = {
         state.home.ether.provider
       ).getBlockNumber();
       const blockAmount = Math.ceil(waitTime / 12);
-      const feeHistory = await toRaw(state.home.ether.web3.eth).getFeeHistory(
-        blockAmount,
-        blockNumber,
-        [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-      );
-      const gasPriceList: BigNumber[] = [];
-      for (let i = 0; i < feeHistory.gasUsedRatio.length; i++) {
-        const baseFeePerGas = BigNumber.from(feeHistory.baseFeePerGas[i]);
-        let pet = (gasLimit * 100) / (30000000 * feeHistory.gasUsedRatio[i]);
-        if (pet > 100) {
-          pet = 100;
+      const PromiseList: any[] = [];
+      for (let i = 0; ; i += 1024) {
+        if (blockAmount - i < 1024) {
+          PromiseList.push(toRaw(state.home.ether.web3.eth).getFeeHistory(
+            blockAmount - i,
+            blockNumber - i,
+            [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+          ))
+          break;
         }
-        const index = Math.ceil(pet / 10) - 1;
-        const priorityFeePerGas = BigNumber.from(feeHistory.reward[i][index]);
-        const gasPrice = baseFeePerGas.add(priorityFeePerGas);
-        gasPriceList.push(gasPrice);
+        PromiseList.push(toRaw(state.home.ether.web3.eth).getFeeHistory(
+          1024,
+          blockNumber - i,
+          [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+        ))
+      }
+      const feeHistoryList = await Promise.all(PromiseList);
+      const gasPriceList: BigNumber[] = [];
+      for (let j = 0; j < feeHistoryList.length; j++) {
+        for (let i = 0; i < feeHistoryList[j].gasUsedRatio.length; i++) {
+          const baseFeePerGas = BigNumber.from(feeHistoryList[j].baseFeePerGas[i]);
+          let pet = (gasLimit * 100) / (30000000 * feeHistoryList[j].gasUsedRatio[i]);
+          if (pet > 100) {
+            pet = 100;
+          }
+          const index = Math.ceil(pet / 10) - 1;
+          const priorityFeePerGas = BigNumber.from(feeHistoryList[j].reward[i][index]);
+          const gasPrice = baseFeePerGas.add(priorityFeePerGas);
+          gasPriceList.push(gasPrice);
+        }
       }
       state.home.gasPriceList = gasPriceList;
     }
