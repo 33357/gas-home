@@ -5,7 +5,7 @@
         <el-form-item label="GasLimit :">
           <el-input v-model="gasLimitInput" type="string"> </el-input>
         </el-form-item>
-        <el-form-item label="waitTime :">
+        <el-form-item label="WaitTime :">
           <el-input v-model="waitTimeInput" class="input-with-select">
             <template #append>
               <el-select
@@ -37,7 +37,7 @@
             {{ `${utils.etherUtils.formatUnits(gasPrice, "gwei")} gwei` }}
           </div>
         </el-form-item>
-        <el-form-item label="total Amount :">
+        <el-form-item label="Block Amount:">
           <div>
             {{ state.home.gasPriceList.length }}
           </div>

@@ -72,6 +72,7 @@ const actions: ActionTree<State, State> = {
   },
 
   async estimateGasPrice({ state }, { gasLimit, waitTime }) {
+    state.home.gasPriceList = [];
     if (state.home.ether.web3 && state.home.ether.provider) {
       const blockNumber = await toRaw(
         state.home.ether.provider
