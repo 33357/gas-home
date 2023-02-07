@@ -7,7 +7,12 @@ export function log(...args: any) {
   console.log(new Date().toLocaleString(), ...args);
 }
 
-export async function retry(func: Function, time: number, args?: Array<any>, callback?: Function): Promise<any> {
+export async function retry(
+  func: Function,
+  time: number,
+  args?: Array<any>,
+  callback?: Function
+): Promise<any> {
   try {
     let res;
     if (args) {

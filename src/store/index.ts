@@ -4,7 +4,7 @@ import { BigNumber, utils, log } from "../const";
 import { toRaw } from "vue";
 import { ElMessage, ElNotification } from "element-plus";
 
-export interface Storage { }
+export interface Storage {}
 
 export interface Home {
   userAddress: string;
@@ -14,7 +14,7 @@ export interface Home {
 }
 
 export interface State {
-  home: Home
+  home: Home;
 }
 
 const state: State = {
@@ -22,11 +22,11 @@ const state: State = {
     userAddress: utils.num.min,
     chainId: 0,
     ether: new Ether(),
-    gasPriceList: []
-  }
+    gasPriceList: [],
+  },
 };
 
-function err(error: any) {
+export function err(error: any) {
   ElMessage({
     message: error.toString().split("(")[0],
     duration: 3000,
@@ -34,7 +34,7 @@ function err(error: any) {
   });
 }
 
-function notification(
+export function notification(
   title: string,
   message: string,
   type: "success" | "warning" | "info"
@@ -62,18 +62,26 @@ const actions: ActionTree<State, State> = {
   async setSync({ state }) {
     await toRaw(state.home.ether).load();
     if (state.home.ether.singer) {
-      state.home.userAddress = await toRaw(state.home.ether.singer).getAddress();
+      state.home.userAddress = await toRaw(
+        state.home.ether.singer
+      ).getAddress();
     }
     if (state.home.ether.chainId) {
       state.home.chainId = state.home.ether.chainId;
     }
   },
 
-  async estimateGasPrice({ state }, { gasLimit, executionTime }) {
+  async estimateGasPrice({ state }, { gasLimit, waitTime }) {
     if (state.home.ether.web3 && state.home.ether.provider) {
-      const blockNumber = await toRaw(state.home.ether.provider).getBlockNumber();
-      const blockAmount = Math.ceil(executionTime / 12);
-      const feeHistory = await toRaw(state.home.ether.web3.eth).getFeeHistory(blockAmount, blockNumber, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+      const blockNumber = await toRaw(
+        state.home.ether.provider
+      ).getBlockNumber();
+      const blockAmount = Math.ceil(waitTime / 12);
+      const feeHistory = await toRaw(state.home.ether.web3.eth).getFeeHistory(
+        blockAmount,
+        blockNumber,
+        [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+      );
       const gasPriceList: BigNumber[] = [];
       for (let i = 0; i < feeHistory.gasUsedRatio.length; i++) {
         const baseFeePerGas = BigNumber.from(feeHistory.baseFeePerGas[i]);
@@ -88,7 +96,7 @@ const actions: ActionTree<State, State> = {
       }
       state.home.gasPriceList = gasPriceList;
     }
-  }
+  },
 };
 
 export default createStore({

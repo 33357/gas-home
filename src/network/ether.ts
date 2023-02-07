@@ -1,5 +1,5 @@
 import detectEthereumProvider from "@metamask/detect-provider";
-import Web3 from 'web3';
+import Web3 from "web3";
 import { ethers, Signer, providers, Wallet } from "ethers";
 
 export class Ether {
@@ -27,7 +27,7 @@ export class Ether {
       this.provider = new ethers.providers.Web3Provider(this.ethereum);
       this.singer = this.provider.getSigner();
       this.chainId = await this.singer.getChainId();
-      if (this.chainId! = 1) {
+      if ((this.chainId! = 1)) {
         await this.ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [
