@@ -77,7 +77,7 @@ export default {
     ...mapActions(["estimateGasPrice"]),
     async doEstimate() {
       try {
-        let waitTime = Number(this.waitTimeInput) * 3;
+        let waitTime = Number(this.waitTimeInput);
         const gasLimit = Number(this.gasLimitInput);
         if (this.waitTimeSelect == "1") {
           waitTime *= 60;
@@ -131,7 +131,7 @@ export default {
             }
           });
         this.tableDataList = tableDataList as any;
-        this.gasPrice = this.state.home.gasPriceList[2]
+        this.gasPrice = this.state.home.gasPriceList[1]
           .div(wei_10)
           .mul(wei_10)
           .add(wei_10);
