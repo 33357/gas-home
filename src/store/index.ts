@@ -85,7 +85,7 @@ const actions: ActionTree<State, State> = {
   },
 
   async watchStorage({ state }) {
-    const storageName = `${state.home.userAddress}_${state.home.chainId}`;
+    const storageName = `${state.home.chainId}`;
     try {
       const storage = localStorage.getItem(storageName);
       if (storage) {
