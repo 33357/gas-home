@@ -4,7 +4,7 @@ import { BigNumber, utils, log } from "../const";
 import { toRaw } from "vue";
 import { ElMessage, ElNotification } from "element-plus";
 
-export interface Storage {}
+export interface Storage { }
 
 export interface Home {
   userAddress: string;
@@ -13,8 +13,15 @@ export interface Home {
   gasPriceList: BigNumber[];
 }
 
+export interface Gas {
+  gasLimitInput: string;
+  waitTimeInput: string;
+  waitTimeSelect: string;
+}
+
 export interface State {
   home: Home;
+  gas: Gas;
 }
 
 const state: State = {
@@ -24,6 +31,11 @@ const state: State = {
     ether: new Ether(),
     gasPriceList: [],
   },
+  gas: {
+    gasLimitInput: '',
+    waitTimeInput: '',
+    waitTimeSelect: '1'
+  }
 };
 
 export function err(error: any) {
@@ -53,6 +65,7 @@ const actions: ActionTree<State, State> = {
   async start({ dispatch }) {
     try {
       await dispatch("setSync");
+      await dispatch("watchStorage");
       utils.func.log("app start success!");
     } catch (error) {
       err(error);
@@ -69,6 +82,29 @@ const actions: ActionTree<State, State> = {
     if (state.home.ether.chainId) {
       state.home.chainId = state.home.ether.chainId;
     }
+  },
+
+  async watchStorage({ state }) {
+    const storageName = `${state.home.userAddress}_${state.home.chainId}`;
+    try {
+      const storage = localStorage.getItem(storageName);
+      if (storage) {
+        utils.deep.clone(state.gas, JSON.parse(storage));
+      } else {
+        throw new Error("localStorage is empty!");
+      }
+    } catch (err) {
+      localStorage.setItem(storageName, JSON.stringify(state.gas));
+    }
+    this.watch(
+      (state) => state.gas,
+      (storage) => {
+        localStorage.setItem(storageName, JSON.stringify(storage));
+      },
+      {
+        deep: true,
+      }
+    );
   },
 
   async estimateGasPrice({ state }, { gasLimit, waitTime }) {
