@@ -22,12 +22,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            @click="doEstimate()"
-            :loading="estimateLoad"
-            >Estimate</el-button
-          >
+          <el-button type="primary" @click="doEstimate()" :loading="estimateLoad">Estimate</el-button>
         </el-form-item>
       </el-form>
       <el-divider />
@@ -47,13 +42,14 @@
       <el-table :data="tableDataList" stripe style="width: 100%">
         <el-table-column prop="gasPriceStr" label="GasPrice" width="300" />
         <el-table-column prop="amount" label="Amount" />
+        <el-table-column prop="time" label="Time" />
       </el-table>
     </el-card>
   </div>
 </template>
 
 <script lang="ts">
-import { BigNumber, utils, log } from "../const";
+import { BigNumber, utils, log, formatTime } from "../const";
 import { mapState, mapActions } from "vuex";
 import { State, err } from "../store";
 
@@ -66,7 +62,7 @@ export default {
       tableDataList: [],
     };
   },
-  async created() {},
+  async created() { },
   computed: mapState({
     state: (state: any) => state as State,
   }),
@@ -102,13 +98,15 @@ export default {
           gasPrice: BigNumber;
           gasPriceStr: string;
           amount: number;
+          time: string;
+          timestamp: number;
         }[] = [];
         this.state.home.gasPriceList
           .sort((a, b) => {
-            return a.gt(b) ? 1 : -1;
+            return a.gasPrice.gt(b.gasPrice) ? 1 : -1;
           })
           .forEach((e) => {
-            let gasPrice = e.div(wei_10).mul(wei_10);
+            let gasPrice = e.gasPrice.div(wei_10).mul(wei_10);
             if (
               tableDataList.length == 0 ||
               gasPrice
@@ -122,13 +120,18 @@ export default {
                   "gwei"
                 )} gwei`,
                 amount: 1,
+                time: formatTime(this.state.home.timestamp - e.timestamp),
+                timestamp: e.timestamp
               });
             } else {
               tableDataList[tableDataList.length - 1].amount += 1;
+              if (e.timestamp > tableDataList[tableDataList.length - 1].timestamp) {
+                tableDataList[tableDataList.length - 1].time = formatTime(this.state.home.timestamp - e.timestamp)
+              }
             }
           });
         this.tableDataList = tableDataList as any;
-        this.gasPrice = this.state.home.gasPriceList[1]
+        this.gasPrice = this.state.home.gasPriceList[1].gasPrice
           .div(wei_10)
           .mul(wei_10)
           .add(wei_10);

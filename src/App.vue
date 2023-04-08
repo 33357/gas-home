@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { useDark, useToggle } from "@vueuse/core";
-import { utils } from "./const";
+import { utils,log } from "./const";
 import { mapState, mapActions } from "vuex";
 import { State } from "./store";
 
@@ -42,7 +42,7 @@ export default {
   },
   created() {
     window.addEventListener("load", async () => {
-      utils.func.log("window load");
+      log("window load");
       await this.start();
     });
   },
