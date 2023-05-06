@@ -3,13 +3,13 @@
     <el-card class="box-card">
       <el-form label-width="30%">
         <el-form-item label="GasLimit :">
-          <el-input v-model="state.gas.gasLimitInput" type="string"> </el-input>
+          <el-input v-model="state.storage.gasLimitInput" type="string"> </el-input>
         </el-form-item>
         <el-form-item label="WaitTime :">
-          <el-input v-model="state.gas.waitTimeInput" class="input-with-select">
+          <el-input v-model="state.storage.waitTimeInput" class="input-with-select">
             <template #append>
               <el-select
-                v-model="state.gas.waitTimeSelect"
+                v-model="state.storage.waitTimeSelect"
                 placeholder="Select"
                 style="width: 115px"
               >
@@ -70,13 +70,13 @@ export default {
     ...mapActions(["estimateGasPrice"]),
     async doEstimate() {
       try {
-        let waitTime = Number(this.state.gas.waitTimeInput);
-        const gasLimit = Number(this.state.gas.gasLimitInput);
-        if (this.state.gas.waitTimeSelect == "1") {
+        let waitTime = Number(this.state.storage.waitTimeInput);
+        const gasLimit = Number(this.state.storage.gasLimitInput);
+        if (this.state.storage.waitTimeSelect == "1") {
           waitTime *= 60;
-        } else if (this.state.gas.waitTimeSelect == "2") {
+        } else if (this.state.storage.waitTimeSelect == "2") {
           waitTime *= 60 * 60;
-        } else if (this.state.gas.waitTimeSelect == "3") {
+        } else if (this.state.storage.waitTimeSelect == "3") {
           waitTime *= 60 * 60 * 24;
         }
         if (gasLimit > 30000000 || gasLimit == 0) {

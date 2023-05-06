@@ -12,9 +12,10 @@ export interface Home {
   timestamp: number;
   ether: Ether;
   gasPriceList: { gasPrice: BigNumber, timestamp: number }[];
+  blockTime: { [chainId: number]: number }
 }
 
-export interface Gas {
+export interface Storage {
   gasLimitInput: string;
   waitTimeInput: string;
   waitTimeSelect: string;
@@ -22,7 +23,7 @@ export interface Gas {
 
 export interface State {
   home: Home;
-  gas: Gas;
+  storage: Storage;
 }
 
 const state: State = {
@@ -32,8 +33,13 @@ const state: State = {
     timestamp: 0,
     ether: new Ether(),
     gasPriceList: [],
+    blockTime: {
+      1: 12,
+      56: 3,
+      137: 2
+    }
   },
-  gas: {
+  storage: {
     gasLimitInput: '',
     waitTimeInput: '',
     waitTimeSelect: '1'
@@ -91,15 +97,15 @@ const actions: ActionTree<State, State> = {
     try {
       const storage = localStorage.getItem(storageName);
       if (storage) {
-        utils.deep.clone(state.gas, JSON.parse(storage));
+        utils.deep.clone(state.storage, JSON.parse(storage));
       } else {
         throw new Error("localStorage is empty!");
       }
     } catch (err) {
-      localStorage.setItem(storageName, JSON.stringify(state.gas));
+      localStorage.setItem(storageName, JSON.stringify(state.storage));
     }
     this.watch(
-      (state) => state.gas,
+      (state) => state.storage,
       (storage) => {
         localStorage.setItem(storageName, JSON.stringify(storage));
       },
@@ -115,12 +121,11 @@ const actions: ActionTree<State, State> = {
       const blockNumber = await toRaw(
         state.home.ether.provider
       ).getBlockNumber();
-      // log(blockNumber)
       const block = await toRaw(
         state.home.ether.provider
       ).getBlock(blockNumber);
       state.home.timestamp = block.timestamp;
-      const blockAmount = Math.ceil(waitTime / 12);
+      const blockAmount = Math.ceil(waitTime / state.home.blockTime[state.home.chainId]);
       const PromiseList: any[] = [];
       for (let i = 0; ; i += 1024) {
         if (blockAmount - i < 1024) {
@@ -144,7 +149,6 @@ const actions: ActionTree<State, State> = {
       const feeHistoryList = await Promise.all(PromiseList);
       const gasPriceList: { gasPrice: BigNumber, timestamp: number }[] = [];
       for (let j = 0; j < feeHistoryList.length; j++) {
-        // log(feeHistoryList[j])
         for (let i = 0; i < feeHistoryList[j].gasUsedRatio.length; i++) {
           const baseFeePerGas = BigNumber.from(
             feeHistoryList[j].baseFeePerGas[i]
@@ -159,7 +163,7 @@ const actions: ActionTree<State, State> = {
             feeHistoryList[j].reward[i][index]
           );
           const gasPrice = baseFeePerGas.add(priorityFeePerGas);
-          gasPriceList.push({ gasPrice, timestamp: state.home.timestamp - (j * 1024 + i) * 12 });
+          gasPriceList.push({ gasPrice, timestamp: state.home.timestamp - (j * 1024 + i) * state.home.blockTime[state.home.chainId] });
         }
       }
       state.home.gasPriceList = gasPriceList;

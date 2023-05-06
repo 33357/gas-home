@@ -27,7 +27,7 @@ export class Ether {
       this.provider = new ethers.providers.Web3Provider(this.ethereum);
       this.singer = this.provider.getSigner();
       this.chainId = await this.singer.getChainId();
-      if ((this.chainId! = 1)) {
+      if (this.chainId != 1 && this.chainId != 137) {
         await this.ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [
