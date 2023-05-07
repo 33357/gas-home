@@ -83,7 +83,7 @@ const actions: ActionTree<State, State> = {
       if (Number(gasLimitInput) > 0 && Number(gasLimitInput) <= 30000000) {
         state.storage.gasLimitInput = gasLimitInput;
       }
-      log(state.storage);
+      log(state);
       utils.func.log("app start success!");
     } catch (error) {
       err(error);
