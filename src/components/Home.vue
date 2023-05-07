@@ -3,10 +3,14 @@
     <el-card class="box-card">
       <el-form label-width="30%">
         <el-form-item label="GasLimit :">
-          <el-input v-model="state.storage.gasLimitInput" type="string"> </el-input>
+          <el-input v-model="state.storage.gasLimitInput" type="string">
+          </el-input>
         </el-form-item>
         <el-form-item label="WaitTime :">
-          <el-input v-model="state.storage.waitTimeInput" class="input-with-select">
+          <el-input
+            v-model="state.storage.waitTimeInput"
+            class="input-with-select"
+          >
             <template #append>
               <el-select
                 v-model="state.storage.waitTimeSelect"
@@ -22,7 +26,12 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="doEstimate()" :loading="estimateLoad">Estimate</el-button>
+          <el-button
+            type="primary"
+            @click="doEstimate()"
+            :loading="estimateLoad"
+            >Estimate</el-button
+          >
         </el-form-item>
       </el-form>
       <el-divider />
@@ -62,7 +71,7 @@ export default {
       tableDataList: [],
     };
   },
-  async created() { },
+  async created() {},
   computed: mapState({
     state: (state: any) => state as State,
   }),
@@ -121,12 +130,16 @@ export default {
                 )} gwei`,
                 amount: 1,
                 time: formatTime(this.state.home.timestamp - e.timestamp),
-                timestamp: e.timestamp
+                timestamp: e.timestamp,
               });
             } else {
               tableDataList[tableDataList.length - 1].amount += 1;
-              if (e.timestamp > tableDataList[tableDataList.length - 1].timestamp) {
-                tableDataList[tableDataList.length - 1].time = formatTime(this.state.home.timestamp - e.timestamp)
+              if (
+                e.timestamp > tableDataList[tableDataList.length - 1].timestamp
+              ) {
+                tableDataList[tableDataList.length - 1].time = formatTime(
+                  this.state.home.timestamp - e.timestamp
+                );
               }
             }
           });

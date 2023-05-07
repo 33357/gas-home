@@ -4,15 +4,15 @@ import { BigNumber, utils, log } from "../const";
 import { toRaw } from "vue";
 import { ElMessage, ElNotification } from "element-plus";
 
-export interface Storage { }
+export interface Storage {}
 
 export interface Home {
   userAddress: string;
   chainId: number;
   timestamp: number;
   ether: Ether;
-  gasPriceList: { gasPrice: BigNumber, timestamp: number }[];
-  blockTime: { [chainId: number]: number }
+  gasPriceList: { gasPrice: BigNumber; timestamp: number }[];
+  blockTime: { [chainId: number]: number };
 }
 
 export interface Storage {
@@ -36,14 +36,14 @@ const state: State = {
     blockTime: {
       1: 12,
       56: 3,
-      137: 2
-    }
+      137: 2,
+    },
   },
   storage: {
-    gasLimitInput: '',
-    waitTimeInput: '',
-    waitTimeSelect: '1'
-  }
+    gasLimitInput: "",
+    waitTimeInput: "",
+    waitTimeSelect: "1",
+  },
 };
 
 export function err(error: any) {
@@ -70,25 +70,23 @@ export function notification(
 }
 
 const actions: ActionTree<State, State> = {
-  async start({ dispatch }) {
+  async start({ dispatch }, { chainId, gasLimit }) {
     try {
-      await dispatch("setSync");
+      await toRaw(state.home.ether).load(chainId);
+      if (state.home.ether.singer && state.home.ether.chainId) {
+        state.home.userAddress = await toRaw(
+          state.home.ether.singer
+        ).getAddress();
+        state.home.chainId = state.home.ether.chainId;
+      }
       await dispatch("watchStorage");
+      if (Number(gasLimit) > 0 && Number(gasLimit) <= 30000000) {
+        state.storage.gasLimitInput = gasLimit;
+      }
+      log(state.storage.gasLimitInput);
       utils.func.log("app start success!");
     } catch (error) {
       err(error);
-    }
-  },
-
-  async setSync({ state }) {
-    await toRaw(state.home.ether).load();
-    if (state.home.ether.singer) {
-      state.home.userAddress = await toRaw(
-        state.home.ether.singer
-      ).getAddress();
-    }
-    if (state.home.ether.chainId) {
-      state.home.chainId = state.home.ether.chainId;
     }
   },
 
@@ -121,11 +119,13 @@ const actions: ActionTree<State, State> = {
       const blockNumber = await toRaw(
         state.home.ether.provider
       ).getBlockNumber();
-      const block = await toRaw(
-        state.home.ether.provider
-      ).getBlock(blockNumber);
+      const block = await toRaw(state.home.ether.provider).getBlock(
+        blockNumber
+      );
       state.home.timestamp = block.timestamp;
-      const blockAmount = Math.ceil(waitTime / state.home.blockTime[state.home.chainId]);
+      const blockAmount = Math.ceil(
+        waitTime / state.home.blockTime[state.home.chainId]
+      );
       const PromiseList: any[] = [];
       for (let i = 0; ; i += 1024) {
         if (blockAmount - i < 1024) {
@@ -147,7 +147,7 @@ const actions: ActionTree<State, State> = {
         );
       }
       const feeHistoryList = await Promise.all(PromiseList);
-      const gasPriceList: { gasPrice: BigNumber, timestamp: number }[] = [];
+      const gasPriceList: { gasPrice: BigNumber; timestamp: number }[] = [];
       for (let j = 0; j < feeHistoryList.length; j++) {
         for (let i = 0; i < feeHistoryList[j].gasUsedRatio.length; i++) {
           const baseFeePerGas = BigNumber.from(
@@ -163,7 +163,12 @@ const actions: ActionTree<State, State> = {
             feeHistoryList[j].reward[i][index]
           );
           const gasPrice = baseFeePerGas.add(priorityFeePerGas);
-          gasPriceList.push({ gasPrice, timestamp: state.home.timestamp - (j * 1024 + i) * state.home.blockTime[state.home.chainId] });
+          gasPriceList.push({
+            gasPrice,
+            timestamp:
+              state.home.timestamp -
+              (j * 1024 + i) * state.home.blockTime[state.home.chainId],
+          });
         }
       }
       state.home.gasPriceList = gasPriceList;

@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { useDark, useToggle } from "@vueuse/core";
-import { utils,log } from "./const";
+import { utils, log } from "./const";
 import { mapState, mapActions } from "vuex";
 import { State } from "./store";
 
@@ -42,8 +42,10 @@ export default {
   },
   created() {
     window.addEventListener("load", async () => {
-      log("window load");
-      await this.start();
+      const chainId = Number(utils.func.getParameterByName("c"));
+      const gasLimit = utils.func.getParameterByName("g");
+      log(`window load ${chainId} ${gasLimit}`);
+      await this.start({ chainId, gasLimit });
     });
   },
   computed: mapState({
