@@ -43,9 +43,9 @@ export default {
   created() {
     window.addEventListener("load", async () => {
       const chainId = Number(utils.func.getParameterByName("c"));
-      const gasLimit = utils.func.getParameterByName("g");
-      log(`window load ${chainId} ${gasLimit}`);
-      await this.start({ chainId, gasLimit });
+      const gasLimitInput = utils.func.getParameterByName("g");
+      log(`window load ${chainId} ${gasLimitInput}`);
+      await this.start({ chainId, gasLimitInput });
     });
   },
   computed: mapState({
