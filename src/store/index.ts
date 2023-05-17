@@ -70,7 +70,7 @@ export function notification(
 }
 
 const actions: ActionTree<State, State> = {
-  async start({ dispatch }, { chainId, gasLimitInput }) {
+  async start({ dispatch }, { chainId }) {
     try {
       await toRaw(state.home.ether).load(chainId);
       if (state.home.ether.singer && state.home.ether.chainId) {
@@ -80,10 +80,7 @@ const actions: ActionTree<State, State> = {
         state.home.chainId = state.home.ether.chainId;
       }
       await dispatch("watchStorage");
-      if (Number(gasLimitInput) > 0 && Number(gasLimitInput) <= 30000000) {
-        state.storage.gasLimitInput = gasLimitInput;
-      }
-      utils.func.log("app start success!");
+      log("app start success!");
     } catch (error) {
       err(error);
     }
@@ -104,7 +101,6 @@ const actions: ActionTree<State, State> = {
     this.watch(
       (state) => state.storage,
       (storage) => {
-        log(storage);
         localStorage.setItem(storageName, JSON.stringify(storage));
       },
       {

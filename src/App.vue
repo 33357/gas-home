@@ -45,7 +45,14 @@ export default {
       const chainId = Number(utils.func.getParameterByName("c"));
       const gasLimitInput = utils.func.getParameterByName("g");
       log(`window load ${chainId} ${gasLimitInput}`);
-      await this.start({ chainId, gasLimitInput });
+      await this.start({ chainId });
+      if (
+        gasLimitInput &&
+        Number(gasLimitInput) > 0 &&
+        Number(gasLimitInput) <= 30000000
+      ) {
+        this.state.storage.gasLimitInput = gasLimitInput;
+      }
     });
   },
   computed: mapState({

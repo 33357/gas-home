@@ -71,7 +71,6 @@ export default {
       tableDataList: [],
     };
   },
-  async created() {},
   computed: mapState({
     state: (state: any) => state as State,
   }),
