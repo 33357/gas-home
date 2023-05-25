@@ -6,7 +6,7 @@
           <el-input v-model="state.storage.gasLimitInput" type="string">
           </el-input>
         </el-form-item>
-        <el-form-item label="WaitTime :">
+        <el-form-item label="等待时间 :">
           <el-input
             v-model="state.storage.waitTimeInput"
             class="input-with-select"
@@ -17,9 +17,9 @@
                 placeholder="Select"
                 style="width: 115px"
               >
-                <el-option label="Minute" value="1" />
-                <el-option label="Hour" value="2" />
-                <el-option label="Day" value="3" />
+                <el-option label="分钟" value="1" />
+                <el-option label="小时" value="2" />
+                <el-option label="天" value="3" />
               </el-select>
             </template>
           </el-input>
@@ -36,22 +36,17 @@
       </el-form>
       <el-divider />
       <el-form label-width="30%">
-        <el-form-item label="Lowest GasPrice :">
+        <el-form-item label="推荐 GasPrice:">
           <div>
-            {{ `${utils.etherUtils.formatUnits(gasPrice, "gwei")} gwei` }}
-          </div>
-        </el-form-item>
-        <el-form-item label="Block Amount:">
-          <div>
-            {{ state.home.gasPriceList.length }}
+            {{  `${utils.etherUtils.formatUnits(lowestGasPrice, "gwei")} gwei` }}
           </div>
         </el-form-item>
       </el-form>
       <el-divider />
       <el-table :data="tableDataList" stripe style="width: 100%">
         <el-table-column prop="gasPriceStr" label="GasPrice" width="300" />
-        <el-table-column prop="amount" label="Amount" />
-        <el-table-column prop="time" label="Time" />
+        <el-table-column prop="amount" label="数量" />
+        <el-table-column prop="time" label="最近时间" />
       </el-table>
     </el-card>
   </div>
@@ -66,7 +61,7 @@ export default {
   data() {
     return {
       utils: utils,
-      gasPrice: BigNumber.from(0),
+      lowestGasPrice:BigNumber.from(0),
       estimateLoad: false,
       tableDataList: [],
     };
@@ -95,7 +90,6 @@ export default {
         }
         this.estimateLoad = true;
         this.tableDataList = [];
-        this.gasPrice = BigNumber.from(0);
         await this.estimateGasPrice({
           gasLimit,
           waitTime,
@@ -114,17 +108,17 @@ export default {
             return a.gasPrice.gt(b.gasPrice) ? 1 : -1;
           })
           .forEach((e) => {
-            let gasPrice = e.gasPrice.div(wei_10).mul(wei_10).add(wei_10);
+            e.gasPrice = e.gasPrice.div(wei_10).mul(wei_10).add(wei_10);
             if (
               tableDataList.length == 0 ||
-              gasPrice
+              e.gasPrice
                 .sub(tableDataList[tableDataList.length - 1].gasPrice)
                 .gt(wei_10)
             ) {
               tableDataList.push({
-                gasPrice,
+                gasPrice:e.gasPrice,
                 gasPriceStr: `${utils.etherUtils.formatUnits(
-                  gasPrice,
+                  e.gasPrice,
                   "gwei"
                 )} gwei`,
                 amount: 1,
@@ -142,6 +136,7 @@ export default {
               }
             }
           });
+        this.lowestGasPrice = this.state.home.gasPriceList[2].gasPrice;
         this.tableDataList = tableDataList as any;
       } catch (error) {
         err(error);
