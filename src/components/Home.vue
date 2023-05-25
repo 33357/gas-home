@@ -101,7 +101,6 @@ export default {
           waitTime,
         });
         this.estimateLoad = false;
-        const wei_10 = BigNumber.from(10 ** 8);
         const tableDataList: {
           gasPrice: BigNumber;
           gasPriceStr: string;
@@ -109,12 +108,13 @@ export default {
           time: string;
           timestamp: number;
         }[] = [];
+        const wei_10 = BigNumber.from(10 ** 8);
         this.state.home.gasPriceList
           .sort((a, b) => {
             return a.gasPrice.gt(b.gasPrice) ? 1 : -1;
           })
           .forEach((e) => {
-            let gasPrice = e.gasPrice.div(wei_10).mul(wei_10);
+            let gasPrice = e.gasPrice.div(wei_10).mul(wei_10).add(wei_10);
             if (
               tableDataList.length == 0 ||
               gasPrice
@@ -143,10 +143,6 @@ export default {
             }
           });
         this.tableDataList = tableDataList as any;
-        this.gasPrice = this.state.home.gasPriceList[1].gasPrice
-          .div(wei_10)
-          .mul(wei_10)
-          .add(wei_10);
       } catch (error) {
         err(error);
       }

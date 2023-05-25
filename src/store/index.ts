@@ -11,7 +11,11 @@ export interface Home {
   chainId: number;
   timestamp: number;
   ether: Ether;
-  gasPriceList: { gasPrice: BigNumber; timestamp: number }[];
+  gasPriceList: {
+    gasPrice: BigNumber;
+    timestamp: number;
+    blockNumber: number;
+  }[];
   blockTime: { [chainId: number]: number };
 }
 
@@ -110,11 +114,8 @@ const actions: ActionTree<State, State> = {
   },
 
   async estimateGasPrice({ state }, { gasLimit, waitTime }) {
-    state.home.gasPriceList = [];
     if (state.home.ether.web3 && state.home.ether.provider) {
-      const blockNumber = await toRaw(
-        state.home.ether.provider
-      ).getBlockNumber();
+      let blockNumber = await toRaw(state.home.ether.provider).getBlockNumber();
       const block = await toRaw(state.home.ether.provider).getBlock(
         blockNumber
       );
@@ -143,8 +144,15 @@ const actions: ActionTree<State, State> = {
         );
       }
       const feeHistoryList = await Promise.all(PromiseList);
-      const gasPriceList: { gasPrice: BigNumber; timestamp: number }[] = [];
+      const gasPriceList: {
+        gasPrice: BigNumber;
+        timestamp: number;
+        blockNumber: number;
+      }[] = [];
       for (let j = 0; j < feeHistoryList.length; j++) {
+        let oldestBlockNumber = BigNumber.from(
+          feeHistoryList[j].oldestBlock
+        ).toNumber();
         for (let i = 0; i < feeHistoryList[j].gasUsedRatio.length; i++) {
           const baseFeePerGas = BigNumber.from(
             feeHistoryList[j].baseFeePerGas[i]
@@ -154,16 +162,18 @@ const actions: ActionTree<State, State> = {
           if (pet > 100) {
             pet = 100;
           }
-          const index = Math.ceil(pet / 10) - 1;
           const priorityFeePerGas = BigNumber.from(
-            feeHistoryList[j].reward[i][index]
+            feeHistoryList[j].reward[i][Math.ceil(pet / 10) - 1]
           );
           const gasPrice = baseFeePerGas.add(priorityFeePerGas);
+          const thisBlockNumber = oldestBlockNumber + i;
           gasPriceList.push({
             gasPrice,
+            blockNumber: thisBlockNumber,
             timestamp:
               state.home.timestamp -
-              (j * 1024 + i) * state.home.blockTime[state.home.chainId],
+              (blockNumber - thisBlockNumber) *
+                state.home.blockTime[state.home.chainId],
           });
         }
       }
