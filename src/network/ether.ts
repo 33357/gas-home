@@ -1,6 +1,7 @@
 import detectEthereumProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 import { ethers, Signer, providers, Wallet } from "ethers";
+import { log } from "../const";
 
 export class Ether {
   public ethereum: any;
@@ -27,12 +28,13 @@ export class Ether {
       this.provider = new ethers.providers.Web3Provider(this.ethereum);
       this.singer = this.provider.getSigner();
       this.chainId = await this.singer.getChainId();
+      log(this.chainId)
       if (this.chainId != chainId) {
         await this.changeChain(chainId);
       }
-      if (this.chainId != 1 && this.chainId != 137) {
-        await this.changeChain(1);
-      }
+      // if (this.chainId != 1 && this.chainId != 137) {
+      //   await this.changeChain(1);
+      // }
     } else {
       throw "Please use a browser that supports web3 to open";
     }

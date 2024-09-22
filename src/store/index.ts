@@ -114,20 +114,21 @@ const actions: ActionTree<State, State> = {
   },
 
   async estimateGasPrice({ state }, { gasLimit, waitTime }) {
-    if (state.home.ether.web3 && state.home.ether.provider) {
-      let blockNumber = await toRaw(state.home.ether.provider).getBlockNumber();
-      const block = await toRaw(state.home.ether.provider).getBlock(
+    if (state.home.ether.web3) {
+
+      let blockNumber = await toRaw(state.home.ether.web3.eth).getBlockNumber()
+      const block = await toRaw(state.home.ether.web3.eth).getBlock(
         blockNumber
       );
-      state.home.timestamp = block.timestamp;
+      state.home.timestamp = Number(block.timestamp);
       const blockAmount = Math.ceil(
         waitTime / state.home.blockTime[state.home.chainId]
       );
-      const PromiseList: any[] = [];
+      const feeHistoryList: any[] = [];
       for (let i = 0; ; i += 1024) {
         if (blockAmount - i < 1024) {
-          PromiseList.push(
-            toRaw(state.home.ether.web3.eth).getFeeHistory(
+          feeHistoryList.push(
+            await toRaw(state.home.ether.web3.eth).getFeeHistory(
               blockAmount - i,
               blockNumber - i,
               [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -135,15 +136,14 @@ const actions: ActionTree<State, State> = {
           );
           break;
         }
-        PromiseList.push(
-          toRaw(state.home.ether.web3.eth).getFeeHistory(
+        feeHistoryList.push(
+          await toRaw(state.home.ether.web3.eth).getFeeHistory(
             1024,
             blockNumber - i,
             [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
           )
         );
       }
-      const feeHistoryList = await Promise.all(PromiseList);
       const gasPriceList: {
         gasPrice: BigNumber;
         timestamp: number;
